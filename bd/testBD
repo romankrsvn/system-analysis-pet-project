@@ -1,0 +1,258 @@
+-- =========================================
+-- USERS
+-- =========================================
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- =========================================
+-- REF_STATUS
+-- =========================================
+CREATE TABLE ref_status (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    short_name VARCHAR(100),
+    description TEXT,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- =========================================
+-- EVENT
+-- =========================================
+CREATE TABLE event (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    author_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    date TIMESTAMP NOT NULL,
+    place VARCHAR(255) NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_event_users
+        FOREIGN KEY (author_id)
+        REFERENCES users(id)
+);
+
+-- =========================================
+-- MEMBERS
+-- =========================================
+CREATE TABLE members (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    status_id BIGINT NOT NULL,
+    event_id BIGINT NOT NULL,
+
+    CONSTRAINT fk_members_users
+        FOREIGN KEY (user_id)
+        REFERENCES users(id),
+
+    CONSTRAINT fk_members_ref_status
+        FOREIGN KEY (status_id)
+        REFERENCES ref_status(id),
+
+    CONSTRAINT fk_members_event
+        FOREIGN KEY (event_id)
+        REFERENCES event(id)
+);
+
+-- =========================================
+-- INDEXES
+-- =========================================
+CREATE INDEX idx_members_user_id
+    ON members(user_id);
+
+CREATE INDEX idx_members_status_id
+    ON members(status_id);
+
+CREATE INDEX idx_members_event_id
+    ON members(event_id);
+
+CREATE INDEX idx_event_author_id
+    ON event(author_id);
+
+-- =========================================
+-- REF_STATUS DATA
+-- =========================================
+INSERT INTO ref_status (
+    name,
+    short_name,
+    description
+)
+VALUES
+(
+    'Не дали ответа',
+    'INVITED',
+    'Пользователь приглашен на мероприятие'
+),
+(
+    'Участвуют в мероприятии',
+    'ACCEPTED',
+    'Пользователь подтвердил участие'
+),
+(
+    'Отказались от участия',
+    'DECLINED',
+    'Пользователь отказался от участия'
+);
+
+-- =========================================
+-- USERS DATA
+-- =========================================
+INSERT INTO users (
+    name,
+    surname,
+    email,
+    password_hash
+)
+VALUES
+(
+    'Иван',
+    'Иванов',
+    'ivanov@example.com',
+    'hash_123'
+),
+(
+    'Петр',
+    'Петров',
+    'petrov@example.com',
+    'hash_456'
+),
+(
+    'Анна',
+    'Сидорова',
+    'sidorova@example.com',
+    'hash_789'
+);
+
+-- =========================================
+-- EVENT DATA
+-- =========================================
+INSERT INTO event (
+    author_id,
+    name,
+    description,
+    date,
+    place
+)
+VALUES
+(
+    1,
+    'Корпоративная встреча',
+    'Обсуждение итогов квартала',
+    '2026-06-15 18:00:00',
+    'Конференц-зал A'
+),
+(
+    2,
+    'Тимбилдинг',
+    'Выезд на природу всей командой',
+    '2026-07-10 10:00:00',
+    'Green Park'
+),
+(
+    3,
+    'IT Meetup',
+    'Обмен опытом между разработчиками',
+    '2026-08-05 19:30:00',
+    'Tech Hub'
+);
+
+-- =========================================
+-- MEMBERS DATA
+-- =========================================
+INSERT INTO members (
+    user_id,
+    status_id,
+    event_id
+)
+VALUES
+(
+    1,
+    2,
+    1
+),
+(
+    2,
+    1,
+    1
+),
+(
+    3,
+    3,
+    2
+);
+
+-- =========================================
+-- Дополнительные пользователи
+-- =========================================
+INSERT INTO users (
+    name,
+    surname,
+    email,
+    password_hash
+)
+VALUES
+('Алексей', 'Смирнов', 'smirnov@example.com', 'hash_111'),
+('Мария', 'Кузнецова', 'kuznetsova@example.com', 'hash_222'),
+('Дмитрий', 'Орлов', 'orlov@example.com', 'hash_333'),
+('Елена', 'Васильева', 'vasileva@example.com', 'hash_444'),
+('Сергей', 'Федоров', 'fedorov@example.com', 'hash_555'),
+('Ольга', 'Морозова', 'morozova@example.com', 'hash_666'),
+('Никита', 'Павлов', 'pavlov@example.com', 'hash_777'),
+('Татьяна', 'Соколова', 'sokolova@example.com', 'hash_888'),
+('Владимир', 'Лебедев', 'lebedev@example.com', 'hash_999'),
+('Юлия', 'Новикова', 'novikova@example.com', 'hash_101');
+
+-- =========================================
+-- Дополнительные мероприятия
+-- =========================================
+INSERT INTO event (
+    author_id,
+    name,
+    description,
+    date,
+    place
+)
+VALUES
+(1, 'Frontend Meetup', 'Обсуждение React и Vue', '2026-09-01 18:00:00', 'Tech Space'),
+(2, 'Backend Conference', 'Доклады по Java и Spring', '2026-09-05 10:00:00', 'Conference Hall'),
+(3, 'Design Review', 'Обзор новых UI макетов', '2026-09-08 15:00:00', 'Room 204'),
+(4, 'DevOps Workshop', 'Практика CI/CD', '2026-09-10 12:00:00', 'Lab 3'),
+(5, 'HR Meeting', 'Обсуждение найма сотрудников', '2026-09-12 11:00:00', 'Office A'),
+(6, 'Product Planning', 'Планирование roadmap', '2026-09-14 16:00:00', 'Meeting Room'),
+(7, 'QA Meetup', 'Автоматизация тестирования', '2026-09-16 13:00:00', 'QA Center'),
+(8, 'Mobile Conference', 'Android и iOS разработка', '2026-09-18 17:00:00', 'Mobile Hub'),
+(9, 'Analytics Day', 'Метрики и BI системы', '2026-09-20 14:00:00', 'Analytics Room'),
+(10, 'Security Training', 'Основы кибербезопасности', '2026-09-22 09:00:00', 'Security Hall');
+
+-- =========================================
+-- Дополнительные участники мероприятий
+-- =========================================
+INSERT INTO members (
+    user_id,
+    status_id,
+    event_id
+)
+VALUES
+(10, 1, 6),
+(10, 2, 7),
+(10, 1, 8),
+(11, 2, 6),
+(11, 2, 7),
+(1, 1, 6)
+
+
+
+
+https://onecompiler.com/mysql/
